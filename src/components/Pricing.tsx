@@ -70,19 +70,19 @@ export default function Pricing() {
 
   return (
     <section className="relative bg-black px-5 pb-16 pt-16 sm:pb-20 sm:pt-20 lg:pb-24">
-      <div className="mx-auto w-full max-w-[1160px]">
+      <div className="mx-auto w-full max-w-290">
 
         {/* Eyebrow */}
         <div className="flex items-center justify-center gap-3">
-          <span aria-hidden="true" className="size-[7px] bg-[#3b5cf5]" />
+          <span aria-hidden="true" className="size-1.75 bg-[#3b5cf5]" />
           <span className="font-mono text-sm font-medium tracking-[0.25em] text-white">
             PRICING
           </span>
-          <span aria-hidden="true" className="size-[7px] bg-[#3b5cf5]" />
+          <span aria-hidden="true" className="size-1.75 bg-[#3b5cf5]" />
         </div>
 
         {/* Heading */}
-        <h2 className="mx-auto mt-6 max-w-[640px] text-center text-3xl font-semibold leading-[1.15] tracking-[-1.5px] text-white sm:text-4xl md:text-5xl">
+        <h2 className="mx-auto mt-6 max-w-160 text-center text-3xl font-semibold leading-[1.15] tracking-[-1.5px] text-white sm:text-4xl md:text-5xl">
           Pay for the leverage,
           <br />
           not the listings
@@ -141,10 +141,10 @@ export default function Pricing() {
               <div
                 key={plan.name}
                 className={cn(
-                  "flex flex-col rounded-[16px] border p-5 transition-all duration-300 hover:-translate-y-1 sm:p-6",
+                  "flex flex-col rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-1 sm:p-6",
                   plan.featured
-                    ? "border-[#333333] bg-gradient-to-br from-[#141414] via-[#1a1a1a] to-[#212121]"
-                    : "border-[#262626] bg-gradient-to-br from-[#080808] via-[#0d0d0d] to-[#151515]",
+                    ? "border-[#333333] bg-linear-to-br from-[#141414] via-[#1a1a1a] to-[#212121]"
+                    : "border-[#262626] bg-linear-to-br from-[#080808] via-[#0d0d0d] to-[#151515]",
                 )}
               >
                 {/* Plan header */}
@@ -178,7 +178,7 @@ export default function Pricing() {
                 <ul className="mt-4 flex flex-col gap-3.5">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-center gap-3">
-                      <span className="flex size-[22px] shrink-0 items-center justify-center rounded-md bg-[#1f1f1f]">
+                      <span className="flex size-5.5 shrink-0 items-center justify-center rounded-md bg-[#1f1f1f]">
                         <Plus
                           className="size-3.5 text-[#d4d4d6]"
                           strokeWidth={2.5}

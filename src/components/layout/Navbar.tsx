@@ -53,7 +53,7 @@ export default function Navbar() {
 
           {/* Authentication */}
           <Link
-            href="/sign-in"
+            href="/signin"
             className="text-sm font-medium text-[#7165ff] transition-colors hover:text-[#948aff]"
           >
             Sign In
@@ -63,7 +63,7 @@ export default function Navbar() {
           <Button
             className="h-11 rounded-xl bg-[#6052f5] px-5 text-sm font-medium text-white shadow-none transition-colors hover:bg-[#7064ff]"
           >
-            <Link href="/sign-up">Get Started</Link>
+            <Link href="/signup">Get Started</Link>
           </Button>
         </div>
 
@@ -106,7 +106,7 @@ export default function Navbar() {
             <div className="h-px w-full bg-[#444444]" />
 
             <Link
-              href="/sign-in"
+              href="/signin"
               onClick={() => setIsOpen(false)}
               className="text-sm font-medium text-[#7165ff]"
             >
@@ -117,7 +117,7 @@ export default function Navbar() {
               className="h-11 w-full rounded-xl bg-[#6052f5] text-white hover:bg-[#7064ff]"
             >
               <Link
-                href="/sign-up"
+                href="/signup"
                 onClick={() => setIsOpen(false)}
               >
                 Get Started
