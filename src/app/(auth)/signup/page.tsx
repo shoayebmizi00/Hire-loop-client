@@ -3,15 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, EyeOff, Lock, Mail, UserRound } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  UserRound,
+  UserSearch,
+  BriefcaseBusiness,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("seeker");
 
   return (
     <section className="relative isolate flex min-h-[75svh] items-center justify-center overflow-hidden bg-black px-5 py-24">
-
       {/* Shared Globe Background */}
       {/* `fill` images get inline left/top/width/height, so centering must come from this wrapper */}
       <div
@@ -40,7 +51,6 @@ export default function SignUpPage() {
 
       {/* Sign Up Card */}
       <div className="relative z-10 w-full max-w-110 rounded-2xl border border-[#333337] bg-[#111113]/90 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.4)] backdrop-blur-sm sm:p-10">
-
         {/* Eyebrow */}
         <div className="flex items-center justify-center gap-3">
           <span aria-hidden="true" className="size-[7px] bg-[#3b5cf5]" />
@@ -56,13 +66,12 @@ export default function SignUpPage() {
         </h1>
 
         <p className="mt-3 text-center text-sm text-[#aaa9ad]">
-          Build a profile in three minutes. The matches start arriving
-          tomorrow morning.
+          Build a profile in three minutes. The matches start arriving tomorrow
+          morning.
         </p>
 
         {/* Social Sign Up */}
         <div className="mt-8 flex flex-col gap-3">
-
           <button
             type="button"
             className="flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-white text-sm font-medium text-[#101019] transition-colors hover:bg-white/90"
@@ -120,15 +129,92 @@ export default function SignUpPage() {
           <span className="h-px flex-1 bg-[#38304e]" />
         </div>
 
+        {/* Role Selection */}
+        <div className="mb-2">
+
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              {
+                value: "seeker",
+                label: "Seeker",
+                description: "Find jobs",
+                icon: UserSearch,
+              },
+              {
+                value: "recruiter",
+                label: "Recruiter",
+                description: "Hire talent",
+                icon: BriefcaseBusiness,
+              },
+              {
+                value: "admin",
+                label: "Admin",
+                description: "Manage app",
+                icon: ShieldCheck,
+              },
+            ].map((role) => {
+              const Icon = role.icon;
+              const isSelected = selectedRole === role.value;
+
+              return (
+                <button
+                  key={role.value}
+                  type="button"
+                  onClick={() => setSelectedRole(role.value)}
+                  className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${
+                    isSelected
+                      ? "border-[#6052ff] bg-[#6052ff]/15 text-white"
+                      : "border-[#303034] bg-[#19191c] text-[#aaa9ad] hover:border-white/30"
+                  }`}
+                >
+                  <Icon
+                    className={`size-6 ${
+                      isSelected ? "text-[#8b80ff]" : "text-[#aaa9ad]"
+                    }`}
+                  />
+
+                  <span className="text-sm font-medium">{role.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Sign Up Form */}
         <form
           className="flex flex-col gap-4"
-          onSubmit={(event) => {
-            // TODO: wire up better-auth credentials sign-up
+          onSubmit={async (event) => {
             event.preventDefault();
+
+            const formData = new FormData(event.currentTarget);
+
+            const name = formData.get("name") as string;
+            const email = formData.get("email") as string;
+            const password = formData.get("password") as string;
+            const role = selectedRole; 
+
+            const { data, error } = await authClient.signUp.email({
+              name,
+              email,
+              password,
+              role,
+              callbackURL: "/",
+            });
+
+            if (error) {
+              console.error("Sign up error:", error);
+              toast.error("Sign up failed. Please try again.", {
+                description: "Please check your information and try again.",
+              });
+            } else {
+              console.log("Sign up successful:", data);
+              toast.success("Sign up successful!", {
+                description:
+                  "Welcome! Please check your email to verify your account.",
+              });
+            }
           }}
         >
-
           {/* Full Name */}
           <div className="flex items-center gap-2.5 rounded-xl border border-[#303034] bg-[#19191c] px-4 transition-colors focus-within:border-[#6052ff]">
             <UserRound className="size-5 shrink-0 text-white" />
@@ -222,7 +308,6 @@ export default function SignUpPage() {
             Sign in
           </Link>
         </p>
-
       </div>
     </section>
   );

@@ -5,13 +5,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <section className="relative isolate flex min-h-[75svh] items-center justify-center overflow-hidden bg-black px-5 py-24">
-
       {/* Shared Globe Background */}
       {/* `fill` images get inline left/top/width/height, so centering must come from this wrapper */}
       <div
@@ -40,7 +41,6 @@ export default function SignInPage() {
 
       {/* Sign In Card */}
       <div className="relative z-10 w-full max-w-110 rounded-2xl border border-[#333337] bg-[#111113]/90 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.4)] backdrop-blur-sm sm:p-10">
-
         {/* Eyebrow */}
         <div className="flex items-center justify-center gap-3">
           <span aria-hidden="true" className="size-[7px] bg-[#3b5cf5]" />
@@ -56,13 +56,12 @@ export default function SignInPage() {
         </h1>
 
         <p className="mt-3 text-center text-sm text-[#aaa9ad]">
-          Sign in to continue your search — your next role is already
-          looking for you.
+          Sign in to continue your search — your next role is already looking
+          for you.
         </p>
 
         {/* Social Sign In */}
         <div className="mt-8 flex flex-col gap-3">
-
           <button
             type="button"
             className="flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-white text-sm font-medium text-[#101019] transition-colors hover:bg-white/90"
@@ -123,12 +122,36 @@ export default function SignInPage() {
         {/* Sign In Form */}
         <form
           className="flex flex-col gap-4"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             // TODO: wire up better-auth credentials sign-in
             event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+
+            const email = formData.get("email") as string;
+            const password = formData.get("password") as string;
+            const rememberMe = formData.get("remember") === "on";
+
+            const { data, error } = await authClient.signIn.email({
+              email,
+              password,
+              rememberMe,
+              callbackURL: "/",
+            });
+            if (error) {
+              console.error("Sign in error:", error);
+
+              toast.error("Sign in failed", {
+                description: "Please check your credentials and try again.",
+              });
+            } else {
+              console.log("Sign in successful:", data);
+
+              toast.success("Sign in successful!", {
+                description: "Welcome back!",
+              });
+            }
           }}
         >
-
           {/* Email */}
           <div className="flex items-center gap-2.5 rounded-xl border border-[#303034] bg-[#19191c] px-4 transition-colors focus-within:border-[#6052ff]">
             <Mail className="size-5 shrink-0 text-white" />
@@ -207,7 +230,6 @@ export default function SignInPage() {
             Create an account
           </Link>
         </p>
-
       </div>
     </section>
   );
