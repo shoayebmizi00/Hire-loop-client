@@ -43,11 +43,11 @@ export default function SignInPage() {
       <div className="relative z-10 w-full max-w-110 rounded-2xl border border-[#333337] bg-[#111113]/90 p-6 shadow-[0_4px_20px_rgba(0,0,0,0.4)] backdrop-blur-sm sm:p-10">
         {/* Eyebrow */}
         <div className="flex items-center justify-center gap-3">
-          <span aria-hidden="true" className="size-[7px] bg-[#3b5cf5]" />
+          <span aria-hidden="true" className="size-1.75 bg-[#3b5cf5]" />
           <span className="font-mono text-[13px] font-medium tracking-[0.25em] text-white">
             SIGN IN
           </span>
-          <span aria-hidden="true" className="size-[7px] bg-[#3b5cf5]" />
+          <span aria-hidden="true" className="size-1.75 bg-[#3b5cf5]" />
         </div>
 
         {/* Heading */}

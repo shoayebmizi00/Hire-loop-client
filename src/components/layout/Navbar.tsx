@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import UserDropdown from "../UserDropDown";
 
 const navLinks = [
   { name: "Browse Jobs", href: "/jobs" },
@@ -52,19 +53,7 @@ export default function Navbar() {
           <div className="h-5 w-px bg-[#444444]" />
 
           {/* Authentication */}
-          <Link
-            href="/signin"
-            className="text-sm font-medium text-[#7165ff] transition-colors hover:text-[#948aff]"
-          >
-            Sign In
-          </Link>
-
-          {/* Get Started */}
-          <Button
-            className="h-11 rounded-xl bg-[#6052f5] px-5 text-sm font-medium text-white shadow-none transition-colors hover:bg-[#7064ff]"
-          >
-            <Link href="/signup">Get Started</Link>
-          </Button>
+         <UserDropdown />
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -105,24 +94,7 @@ export default function Navbar() {
 
             <div className="h-px w-full bg-[#444444]" />
 
-            <Link
-              href="/signin"
-              onClick={() => setIsOpen(false)}
-              className="text-sm font-medium text-[#7165ff]"
-            >
-              Sign In
-            </Link>
-
-            <Button
-              className="h-11 w-full rounded-xl bg-[#6052f5] text-white hover:bg-[#7064ff]"
-            >
-              <Link
-                href="/signup"
-                onClick={() => setIsOpen(false)}
-              >
-                Get Started
-              </Link>
-            </Button>
+            <UserDropdown />
           </div>
         </div>
       )}
