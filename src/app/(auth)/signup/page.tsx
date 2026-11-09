@@ -16,10 +16,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { redirect } from "next/navigation";
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState("seeker");
+  // NEW: Prevent multiple signup requests
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <section className="relative isolate flex min-h-[75svh] items-center justify-center overflow-hidden bg-black px-5 py-24">
@@ -131,7 +134,6 @@ export default function SignUpPage() {
 
         {/* Role Selection */}
         <div className="mb-2">
-
           <div className="grid grid-cols-3 gap-3">
             {[
               {
@@ -186,32 +188,77 @@ export default function SignUpPage() {
           onSubmit={async (event) => {
             event.preventDefault();
 
-            const formData = new FormData(event.currentTarget);
+            if (isSubmitting) return;
 
-            const name = formData.get("name") as string;
-            const email = formData.get("email") as string;
-            const password = formData.get("password") as string;
-            const role = selectedRole; 
+            setIsSubmitting(true);
 
-            const { data, error } = await authClient.signUp.email({
-              name,
-              email,
-              password,
-              role,
-              callbackURL: "/signin",
-            });
+            try {
+              const formData = new FormData(event.currentTarget);
 
-            if (error) {
-              console.error("Sign up error:", error);
-              toast.error("Sign up failed. Please try again.", {
-                description: "Please check your information and try again.",
+              const name = (formData.get("name") as string).trim();
+              const email = (formData.get("email") as string)
+                .trim()
+                .toLowerCase();
+              const password = formData.get("password") as string;
+              const role = selectedRole;
+
+              const { data, error } = await authClient.signUp.email({
+                name,
+                email,
+                password,
+                role,
+                callbackURL: "/signin",
               });
-            } else {
+
+              if (error) {
+                console.error("Sign up error:", error);
+
+                // NEW: Detect an existing account
+                const errorCode = error.code?.toUpperCase();
+                const errorMessage = error.message?.toLowerCase() || "";
+
+                const accountExists =
+                  errorCode === "USER_ALREADY_EXISTS" ||
+                  errorCode === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL" ||
+                  errorMessage.includes("already exists");
+
+                if (accountExists) {
+                  // NEW: Specific duplicate account message
+                  toast.error("Account already exists!", {
+                    description:
+                      "This email is already registered. Please sign in instead.",
+                    action: {
+                      label: "Sign In",
+                      onClick: () => {
+                        redirect("/signin");
+                      },
+                    },
+                  });
+
+                  return;
+                }
+
+                // Other errors
+                toast.error("Sign up failed", {
+                  description: error.message || "Please try again.",
+                });
+
+                return;
+              }
+
               console.log("Sign up successful:", data);
-              toast.success("Sign up successful!", {
-                description:
-                  "Welcome! Please check your email to verify your account.",
+
+              toast.success("Account created successfully!", {
+                description: "Welcome! Please sign in to continue.",
               });
+            } catch (err) {
+              console.error("Unexpected signup error:", err);
+
+              toast.error("Something went wrong", {
+                description: "Please try again later.",
+              });
+            } finally {
+              setIsSubmitting(false);
             }
           }}
         >
