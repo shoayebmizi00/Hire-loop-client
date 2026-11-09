@@ -11,6 +11,7 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  PlusCircle,
   Settings,
   Users,
   type LucideIcon,
@@ -49,6 +50,7 @@ const MENU_ITEMS_BY_ROLE: Record<Role, MenuItem[]> = {
   recruiter: [
     { label: "Dashboard", href: "/dashboard/recruiter", icon: LayoutDashboard },
     { label: "Manage Jobs", href: "/dashboard/recruiter/manage-jobs", icon: Briefcase },
+    { label: "Add Jobs", href: "/dashboard/recruiter/add-jobs", icon: PlusCircle },
     { label: "Applications", href: "/dashboard/recruiter/applications", icon: FileText },
     { label: "Settings", href: "/dashboard/recruiter/settings", icon: Settings },
   ],
