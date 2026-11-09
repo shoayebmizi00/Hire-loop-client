@@ -137,7 +137,7 @@ export default function UserDropdown() {
 
             {/* Dashboard */}
             <Link
-              href="/dashboard"
+              href={`/dashboard/${user.role}`}
               role="menuitem"
               onClick={() => setIsOpen(false)}
               className="mt-2 flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#d1d1d5] transition hover:bg-white/10 hover:text-white"

@@ -20,7 +20,7 @@ import { redirect } from "next/navigation";
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("seeker");
+  const [selectedRole, setSelectedRole] = useState<"seeker" | "recruiter" | "admin">("seeker");
   // NEW: Prevent multiple signup requests
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -135,7 +135,7 @@ export default function SignUpPage() {
         {/* Role Selection */}
         <div className="mb-2">
           <div className="grid grid-cols-3 gap-3">
-            {[
+            {([
               {
                 value: "seeker",
                 label: "Seeker",
@@ -154,7 +154,7 @@ export default function SignUpPage() {
                 description: "Manage app",
                 icon: ShieldCheck,
               },
-            ].map((role) => {
+            ] as const).map((role) => {
               const Icon = role.icon;
               const isSelected = selectedRole === role.value;
 
