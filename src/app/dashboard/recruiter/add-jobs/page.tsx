@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   ArrowRight,
   Building2,
@@ -28,6 +30,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "cn";
+import { createJob } from "@/lib/actions/jobs";
 
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"] as const;
 
@@ -66,6 +69,7 @@ function Section({
 }
 
 export default function AddJobPage() {
+  const router = useRouter();
   const [jobType, setJobType] =
     useState<(typeof JOB_TYPES)[number]>("Full-time");
   const [isRemote, setIsRemote] = useState(true);
@@ -73,11 +77,26 @@ export default function AddJobPage() {
   return (
     <form
       className="mx-auto w-full max-w-4xl pb-10"
-      onSubmit={(event) => {
-        // TODO: wire up job creation
+      onSubmit={async (event) => {
         event.preventDefault();
+
+        const result = await createJob(new FormData(event.currentTarget));
+
+        if (result.success) {
+          toast.success("Job posted!", {
+            description: "Your listing is now live.",
+          });
+          router.push("/dashboard/recruiter/manage-jobs");
+        } else {
+          toast.error("Failed to post job", {
+            description: "Please check the fields and try again.",
+          });
+        }
       }}
     >
+      {/* Segmented buttons + Switch live in state, so carry them in the form data */}
+      <input type="hidden" name="jobType" value={jobType} />
+      <input type="hidden" name="isRemote" value={isRemote ? "true" : "false"} />
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
