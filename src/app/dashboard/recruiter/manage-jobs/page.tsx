@@ -65,6 +65,10 @@ function isExpired(deadline: string) {
   return new Date(deadline).getTime() < Date.now();
 }
 
+// The table reads from the Express API on every request — never prerender it
+// statically at build time (otherwise it would freeze with an empty list).
+export const dynamic = "force-dynamic";
+
 const ManageJobs = async () => {
   const jobs = await getJobs();
 
