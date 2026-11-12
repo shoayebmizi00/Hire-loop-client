@@ -1,117 +1,158 @@
 "use server";
 
-import { MongoClient, ObjectId } from "mongodb";
 import { revalidatePath } from "next/cache";
 
-// Same MongoDB the auth uses (URI from .env, db: Hire-Loop)
-const client = new MongoClient(process.env.MONGODB_URI as string);
-const db = client.db("Hire-Loop");
-const jobs = db.collection("jobs");
+// Where the Express backend (hire-loop-server) is running.
+// You can override it in the client's .env with NEXT_PUBLIC_API_URL
+const API_URL = process.env.BASE_API_URL ?? "http://localhost:5000";
 
+// One job, exactly the shape the pages expect
+export type Job = {
+  id: string;
+  title: string;
+  company: string;
+  category: string;
+  jobType: string;
+  isRemote: boolean;
+  location: string;
+  deadline: string;
+  minSalary: number | null;
+  maxSalary: number | null;
+  payFrequency: string;
+  responsibilities: string;
+  qualifications: string;
+  createdAt: string;
+};
+
+// FormData (what the form gives us) -> plain object, so it's easy to read
+function formToObject(data: FormData) {
+  return Object.fromEntries(data.entries());
+}
+
+// Create a job — sends JSON to POST /jobs on the Express server
 export const createJob = async (data: FormData) => {
-    try {
-        const job = {
-            title: String(data.get("title") ?? ""),
-            company: String(data.get("company") ?? ""),
-            category: String(data.get("category") ?? ""),
-            // from the hidden inputs (React state)
-            jobType: String(data.get("jobType") ?? ""),
-            isRemote: data.get("isRemote") === "true",
-            location: String(data.get("location") ?? ""),
-            deadline: String(data.get("deadline") ?? ""),
-            minSalary: Number(data.get("minSalary")) || null,
-            maxSalary: Number(data.get("maxSalary")) || null,
-            payFrequency: String(data.get("payFrequency") ?? ""),
-            responsibilities: String(data.get("responsibilities") ?? ""),
-            qualifications: String(data.get("qualifications") ?? ""),
-            createdAt: new Date(),
-        };
+  try {
+    const form = formToObject(data);
 
-        const result = await jobs.insertOne(job);
+    const job = {
+      title: String(form.title ?? ""),
+      company: String(form.company ?? ""),
+      category: String(form.category ?? ""),
+      // from the hidden inputs (React state)
+      jobType: String(form.jobType ?? ""),
+      isRemote: form.isRemote === "true",
+      location: String(form.location ?? ""),
+      deadline: String(form.deadline ?? ""),
+      minSalary: Number(form.minSalary) || null,
+      maxSalary: Number(form.maxSalary) || null,
+      payFrequency: String(form.payFrequency ?? ""),
+      responsibilities: String(form.responsibilities ?? ""),
+      qualifications: String(form.qualifications ?? ""),
+      // NOTE: no createdAt here — the server sets it now
+    };
 
-        return { success: true, id: result.insertedId.toString() };
-    } catch (error) {
-        console.error("Create job error:", error);
-        return { success: false };
-    }
+    const res = await fetch(`${API_URL}/jobs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(job),
+    });
+
+    if (!res.ok) return { success: false };
+
+    const created = await res.json();
+    return { success: true, id: created.id as string };
+  } catch (error) {
+    console.error("Create job error:", error);
+    return { success: false };
+  }
 };
 
 // Read all jobs (newest first) for the manage-jobs table
-export const getJobs = async () => {
-    try {
-        const docs = await jobs
-            .find()
-            .sort({ createdAt: -1 })
-            .toArray();
+export const getJobs = async (): Promise<Job[]> => {
+  try {
+    const res = await fetch(`${API_URL}/jobs`, { cache: "no-store" });
 
-        // Turn Mongo docs into plain objects the page can render
-        return docs.map((doc) => ({
-            id: doc._id.toString(),
-            title: doc.title as string,
-            company: doc.company as string,
-            category: doc.category as string,
-            jobType: doc.jobType as string,
-            isRemote: doc.isRemote as boolean,
-            location: doc.location as string,
-            deadline: doc.deadline as string,
-            minSalary: doc.minSalary as number | null,
-            maxSalary: doc.maxSalary as number | null,
-            payFrequency: doc.payFrequency as string,
-            responsibilities: doc.responsibilities as string,
-            qualifications: doc.qualifications as string,
-            createdAt: (doc.createdAt as Date).toISOString(),
-        }));
-    } catch (error) {
-        console.error("Get jobs error:", error);
-        return [];
-    }
+    if (!res.ok) return [];
+
+    // the server sends Mongo docs: "_id" + ISO date strings
+    const docs = (await res.json()) as Array<Record<string, unknown>>;
+
+    // turn each doc into the plain object the pages can render
+    return docs.map((doc) => ({
+      id: String(doc._id),
+      title: doc.title as string,
+      company: doc.company as string,
+      category: doc.category as string,
+      jobType: doc.jobType as string,
+      isRemote: doc.isRemote as boolean,
+      location: doc.location as string,
+      deadline: (doc.deadline as string) ?? "",
+      minSalary: (doc.minSalary as number | null) ?? null,
+      maxSalary: (doc.maxSalary as number | null) ?? null,
+      payFrequency: (doc.payFrequency as string) ?? "",
+      responsibilities: (doc.responsibilities as string) ?? "",
+      qualifications: (doc.qualifications as string) ?? "",
+      createdAt: String(doc.createdAt ?? new Date().toISOString()),
+    }));
+  } catch (error) {
+    console.error("Get jobs error:", error);
+    return [];
+  }
 };
 
 // Update one job by id (only fields present in the FormData are changed)
 export const updateJob = async (id: string, data: FormData) => {
-    try {
-        const updates: Record<string, unknown> = {};
+  try {
+    const form = formToObject(data);
 
-        if (data.get("title")) updates.title = String(data.get("title"));
-        if (data.get("company")) updates.company = String(data.get("company"));
-        if (data.get("category")) updates.category = String(data.get("category"));
-        if (data.get("jobType")) updates.jobType = String(data.get("jobType"));
-        if (data.get("isRemote") !== null)
-            updates.isRemote = data.get("isRemote") === "true";
-        if (data.get("location")) updates.location = String(data.get("location"));
-        if (data.get("deadline")) updates.deadline = String(data.get("deadline"));
-        if (data.get("minSalary")) updates.minSalary = Number(data.get("minSalary")) || null;
-        if (data.get("maxSalary")) updates.maxSalary = Number(data.get("maxSalary")) || null;
-        if (data.get("payFrequency")) updates.payFrequency = String(data.get("payFrequency"));
-        if (data.get("responsibilities")) updates.responsibilities = String(data.get("responsibilities"));
-        if (data.get("qualifications")) updates.qualifications = String(data.get("qualifications"));
+    const updates: Record<string, unknown> = {};
 
-        const result = await jobs.updateOne(
-            { _id: new ObjectId(id) },
-            { $set: updates }
-        );
+    if (form.title) updates.title = String(form.title);
+    if (form.company) updates.company = String(form.company);
+    if (form.category) updates.category = String(form.category);
+    if (form.jobType) updates.jobType = String(form.jobType);
+    if ("isRemote" in form) updates.isRemote = form.isRemote === "true";
+    if (form.location) updates.location = String(form.location);
+    if (form.deadline) updates.deadline = String(form.deadline);
+    if (form.minSalary) updates.minSalary = Number(form.minSalary) || null;
+    if (form.maxSalary) updates.maxSalary = Number(form.maxSalary) || null;
+    if (form.payFrequency) updates.payFrequency = String(form.payFrequency);
+    if (form.responsibilities)
+      updates.responsibilities = String(form.responsibilities);
+    if (form.qualifications)
+      updates.qualifications = String(form.qualifications);
 
-        // tell Next.js to re-render the manage-jobs table
-        revalidatePath("/dashboard/recruiter/manage-jobs");
+    const res = await fetch(`${API_URL}/jobs/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
 
-        return { success: result.matchedCount === 1 };
-    } catch (error) {
-        console.error("Update job error:", error);
-        return { success: false };
-    }
+    if (!res.ok) return { success: false };
+
+    // tell Next.js to re-render the manage-jobs table
+    revalidatePath("/dashboard/recruiter/manage-jobs");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Update job error:", error);
+    return { success: false };
+  }
 };
 
 // Delete one job by id
 export const deleteJob = async (id: string) => {
-    try {
-        const result = await jobs.deleteOne({ _id: new ObjectId(id) });
+  try {
+    const res = await fetch(`${API_URL}/jobs/${id}`, { method: "DELETE" });
 
-        // tell Next.js to re-render the manage-jobs table
-        revalidatePath("/dashboard/recruiter/manage-jobs");
+    if (!res.ok) return { success: false };
 
-        return { success: result.deletedCount === 1 };
-    } catch (error) {
-        console.error("Delete job error:", error);
-        return { success: false };
-    }
+    // tell Next.js to re-render the manage-jobs table
+    revalidatePath("/dashboard/recruiter/manage-jobs");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Delete job error:", error);
+    return { success: false };
+  }
 };

@@ -105,7 +105,7 @@ const ManageJobs = async () => {
       {/* Table card (scrolls horizontally on narrow screens) */}
       <div className="mt-8 overflow-x-auto rounded-2xl border border-[#1e1e24] bg-[#101013]">
         {/* Table head */}
-        <div className="grid min-w-[1120px] grid-cols-[minmax(180px,1.4fr)_minmax(160px,1.2fr)_90px_minmax(120px,1fr)_minmax(110px,0.9fr)_90px_minmax(140px,1fr)_minmax(150px,1.1fr)] items-center gap-3 border-b border-[#1c1c21] px-5 py-3.5 font-mono text-[10.5px] tracking-[0.08em] text-[#8f8f96] uppercase">
+        <div className="grid min-w-280 grid-cols-[minmax(180px,1.4fr)_minmax(160px,1.2fr)_90px_minmax(120px,1fr)_minmax(110px,0.9fr)_90px_minmax(140px,1fr)_minmax(150px,1.1fr)] items-center gap-3 border-b border-[#1c1c21] px-5 py-3.5 font-mono text-[10.5px] tracking-[0.08em] text-[#8f8f96] uppercase">
           <span>Job Title &amp; Dept</span>
           <span>Company &amp; Location</span>
           <span>Type</span>
@@ -140,7 +140,7 @@ const ManageJobs = async () => {
             return (
               <div
                 key={job.id}
-                className="grid min-w-[1120px] grid-cols-[minmax(180px,1.4fr)_minmax(160px,1.2fr)_90px_minmax(120px,1fr)_minmax(110px,0.9fr)_90px_minmax(140px,1fr)_minmax(150px,1.1fr)] items-center gap-3 border-b border-[#1c1c21] px-5 py-3.5 transition-colors last:border-b-0 hover:bg-white/[0.02]"
+                className="grid min-w-280 grid-cols-[minmax(180px,1.4fr)_minmax(160px,1.2fr)_90px_minmax(120px,1fr)_minmax(110px,0.9fr)_90px_minmax(140px,1fr)_minmax(150px,1.1fr)] items-center gap-3 border-b border-[#1c1c21] px-5 py-3.5 transition-colors last:border-b-0 hover:bg-white/2"
               >
                 {/* Job title & dept */}
                 <div className="flex min-w-0 items-center gap-3">
