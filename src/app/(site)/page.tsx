@@ -3,7 +3,12 @@ import Hero from "@/components/Hero";
 import StatsSection from "@/components/layout/StatsSection";
 import NextRole from "@/components/NextRole";
 import Pricing from "@/components/Pricing";
+import JobDiscovery from "@/components/JobDiscovery";
 import Image from "next/image";
+
+// JobDiscovery reads live jobs from the API on every request — without this
+// the landing page would be prerendered at build with an empty jobs list.
+export const dynamic = "force-dynamic";
 
 export default function Home() {
   return (
@@ -44,6 +49,7 @@ export default function Home() {
         </div>
 
       </div>
+      <JobDiscovery />
       <Pricing />
       <NextRole />
     </main>
